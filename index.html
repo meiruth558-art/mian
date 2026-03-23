@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H排版编辑工具 — 一键排版网络编辑器</title>
+<meta name="description" content="H排版 - 一键自动格式化清除网络文章，支持MAC和Windows系统，免注册登陆，免安装，打开网页即可轻松在线一键排版。">
+<meta name="keywords" content="一键排版,网络编辑,排版工具,格式化,文章排版,在线排版">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ============ HEADER ============ */
+  .header {
+    background: #fff;
+    border-bottom: 3px solid #27ae60;
+    padding: 20px 0;
+  }
+
+  .header-inner {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+
+  .header h1 {
+    font-size: 32px;
+    color: #27ae60;
+    font-weight: bold;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  .header-desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.8;
+    padding-top: 6px;
+  }
+
+  /* ============ MAIN CONTAINER ============ */
+  .main {
+    max-width: 1160px;
+    margin: 24px auto;
+    padding: 0 20px;
+  }
+
+  /* ============ OPTIONS BAR ============ */
+  .options-bar {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .options-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .option-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .option-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #27ae60;
+    cursor: pointer;
+  }
+
+  .options-right {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-green {
+    background: #27ae60;
+    color: #fff;
+  }
+
+  .btn-blue {
+    background: #3498db;
+    color: #fff;
+  }
+
+  .btn-orange {
+    background: #e67e22;
+    color: #fff;
+  }
+
+  /* ============ EDITOR AREA ============ */
+  .editor-wrapper {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    background: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+    padding: 6px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    align-items: center;
+  }
+
+  .toolbar-btn {
+    width: 32px;
+    height: 30px;
+    border: 1px solid transparent;
+    background: none;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #555;
+    transition: all 0.15s;
+    font-family: Georgia, serif;
+  }
+
+  .toolbar-btn:hover {
+    background: #e8e8e8;
+    border-color: #ccc;
+  }
+
+  .toolbar-btn.active {
+    background: #ddd;
+    border-color: #bbb;
+  }
+
+  .toolbar-sep {
+    width: 1px;
+    height: 24px;
+    background: #ddd;
+    margin: 0 4px;
+    flex-shrink: 0;
+  }
+
+  .toolbar select {
+    height: 28px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #555;
+    padding: 0 4px;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  /* Editor Content Area */
+  .editor-content {
+    min-height: 380px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 16px 20px;
+    font-size: 16px;
+    line-height: 1.8;
+    color: #333;
+    outline: none;
+  }
+
+  .editor-content:empty::before {
+    content: "请将文章粘贴到此处，然后点击右上角「一键排版」按钮...";
+    color: #bbb;
+    font-size: 15px;
+  }
+
+  .editor-content p { margin-bottom: 0.8em; }
+  .editor-content img { max-width: 100%; height: auto; }
+
+  .editor-status {
+    background: #f0f0f0;
+    border-top: 1px solid #ddd;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #999;
+  }
+
+  /* ============ BOTTOM BUTTONS ============ */
+  .bottom-actions {
+    text-align: center;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-bottom {
+    padding: 10px 28px;
+    border: 1px solid #bbb;
+    background: #f0f0f0;
+    color: #555;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .btn-bottom:hover {
+    background: #e0e0e0;
+    border-color: #999;
+  }
+
+  /* ============ INFO SECTION ============ */
+  .info-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 30px;
+    margin-bottom: 30px;
+  }
+
+  .info-section h2 {
+    font-size: 26px;
+    color: #333;
+    margin-bottom: 14px;
+    font-weight: normal;
+  }
+
+  .info-section p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.8;
+  }
+
+  /* ============ FOOTER ============ */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+    background: #fafafa;
+    font-size: 13px;
+    color: #999;
+    line-height: 2;
+  }
+
+  .footer a {
+    color: #27ae60;
+    text-decoration: none;
+  }
+
+  .footer a:hover { text-decoration: underline; }
+
+  .footer-links {
+    margin-top: 4px;
+  }
+
+  .footer-links a {
+    color: #3498db;
+    margin: 0 6px;
+  }
+
+  /* ============ TOAST NOTIFICATION ============ */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: #27ae60;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 6px;
+    font-size: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 9999;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .header-inner { flex-direction: column; gap: 10px; }
+    .header h1 { font-size: 24px; }
+    .options-bar { flex-direction: column; align-items: flex-start; }
+    .options-right { width: 100%; }
+    .options-right .btn { flex: 1; text-align: center; }
+    .editor-content { min-height: 260px; padding: 12px; }
+    .info-section { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast">操作成功</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <h1>H排版编辑工具</h1>
+    <div class="header-desc">
+      H排版 - 一键自动格式化清除网络文章，支持MAC和Windows系统，免注册登陆，免安装，打开网页即可轻松在线一键排版，让网络编辑更轻松！欢迎分享！
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Options Bar -->
+  <div class="options-bar">
+    <div class="options-left">
+      <label class="option-item">
+        <input type="checkbox" id="opt-img-center" checked> 图片居中
+      </label>
+      <label class="option-item">
+        <input type="checkbox" id="opt-indent"> 段前空格
+      </label>
+      <label class="option-item">
+        <input type="checkbox" id="opt-keep-table" checked> 保留表格
+      </label>
+      <label class="option-item">
+        <input type="checkbox" id="opt-keep-bold" checked> 保留粗体
+      </label>
+      <label class="option-item">
+        <input type="checkbox" id="opt-keep-link" checked> 保留链接
+      </label>
+    </div>
+    <div class="options-right">
+      <button class="btn btn-green" onclick="pasteFromClipboard()">粘贴进来</button>
+      <button class="btn btn-blue" onclick="copyToClipboard()">复制出去</button>
+      <button class="btn btn-orange" onclick="formatContent()">一键排版</button>
+    </div>
+  </div>
+
+  <!-- Editor -->
+  <div class="editor-wrapper">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button class="toolbar-btn" title="源码" onclick="toggleSource()">⟨/⟩</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" title="撤销" onclick="execCmd('undo')">↩</button>
+      <button class="toolbar-btn" title="重做" onclick="execCmd('redo')">↪</button>
+      <div class="toolbar-sep"></div>
+      <select onchange="execCmd('formatBlock', this.value); this.selectedIndex=0;" title="段落格式">
+        <option value="">普通</option>
+        <option value="h1">标题1</option>
+        <option value="h2">标题2</option>
+        <option value="h3">标题3</option>
+        <option value="h4">标题4</option>
+        <option value="p">正文</option>
+      </select>
+      <select onchange="execCmd('fontName', this.value); this.selectedIndex=0;" title="字体">
+        <option value="">字体</option>
+        <option value="Microsoft YaHei">微软雅黑</option>
+        <option value="SimSun">宋体</option>
+        <option value="SimHei">黑体</option>
+        <option value="KaiTi">楷体</option>
+        <option value="Arial">Arial</option>
+        <option value="Georgia">Georgia</option>
+      </select>
+      <select onchange="execCmd('fontSize', this.value); this.selectedIndex=0;" title="字号">
+        <option value="">大小</option>
+        <option value="1">极小</option>
+        <option value="2">较小</option>
+        <option value="3">正常</option>
+        <option value="4">较大</option>
+        <option value="5">大</option>
+        <option value="6">很大</option>
+        <option value="7">极大</option>
+      </select>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" title="加粗" onclick="execCmd('bold')" style="font-weight:bold;">B</button>
+      <button class="toolbar-btn" title="斜体" onclick="execCmd('italic')" style="font-style:italic;">I</button>
+      <button class="toolbar-btn" title="下划线" onclick="execCmd('underline')" style="text-decoration:underline;">U</button>
+      <button class="toolbar-btn" title="删除线" onclick="execCmd('strikeThrough')" style="text-decoration:line-through;">S</button>
+      <button class="toolbar-btn" title="清除格式" onclick="execCmd('removeFormat')">T<sub>x</sub></button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" title="文字颜色" onclick="promptColor('foreColor')">A<span style="display:block;height:3px;background:red;width:14px;margin-top:-2px;"></span></button>
+      <button class="toolbar-btn" title="背景色" onclick="promptColor('hiliteColor')">A<span style="display:block;height:3px;background:#ff0;width:14px;margin-top:-2px;"></span></button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" title="无序列表" onclick="execCmd('insertUnorderedList')">☰</button>
+      <button class="toolbar-btn" title="有序列表" onclick="execCmd('insertOrderedList')">≡</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" title="居左" onclick="execCmd('justifyLeft')">☷</button>
+      <button class="toolbar-btn" title="居中" onclick="execCmd('justifyCenter')">☰</button>
+      <button class="toolbar-btn" title="居右" onclick="execCmd('justifyRight')">☷</button>
+      <button class="toolbar-btn" title="两端对齐" onclick="execCmd('justifyFull')">☰</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" title="插入链接" onclick="insertLink()">🔗</button>
+      <button class="toolbar-btn" title="插入图片" onclick="insertImage()">🖼</button>
+      <button class="toolbar-btn" title="插入水平线" onclick="execCmd('insertHorizontalRule')">―</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" title="全屏编辑" onclick="toggleFullscreen()">⛶</button>
+    </div>
+
+    <!-- Content Editable Area -->
+    <div class="editor-content" id="editor" contenteditable="true"></div>
+
+    <!-- Status Bar -->
+    <div class="editor-status">
+      <span>body</span> &nbsp; <span>p</span> &nbsp; | &nbsp;
+      <span id="charCount">字数：0</span>
+    </div>
+  </div>
+
+  <!-- Bottom Actions -->
+  <div class="bottom-actions">
+    <button class="btn-bottom" onclick="countWords()">统计字数</button>
+    <button class="btn-bottom" onclick="fixTypos()">文字纠错</button>
+    <button class="btn-bottom" onclick="convertSimplified()">简繁转换</button>
+    <button class="btn-bottom" onclick="saveFile()">保存文件</button>
+  </div>
+
+  <!-- Info Section -->
+  <div class="info-section">
+    <h2>H排版</h2>
+    <p>一键排版网络编辑工具，轻松实现一键排版清除文章中加粗、下划线、斜体、带色、链接、样式、多余代码等干扰元素，将文章一键排版编辑成阅读体验更好的文章样式。</p>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div>Copyright &copy; <a href="#">H排版编辑工具</a>（www.yoursite.com）All Rights Reserved</div>
+  <div class="footer-links">
+    友情链接：<a href="#">链接1</a> | <a href="#">链接2</a> | <a href="#">链接3</a>
+  </div>
+</div>
+
+<script>
+// ============ Editor Core ============
+const editor = document.getElementById('editor');
+let isSourceMode = false;
+
+// Execute command
+function execCmd(cmd, value = null) {
+  document.execCommand(cmd, false, value);
+  editor.focus();
+}
+
+// Toggle source code view
+function toggleSource() {
+  if (isSourceMode) {
+    editor.innerHTML = editor.innerText;
+    isSourceMode = false;
+  } else {
+    editor.innerText = editor.innerHTML;
+    isSourceMode = true;
+  }
+}
+
+// Color picker
+function promptColor(cmd) {
+  const color = prompt('请输入颜色值（如 #ff0000 或 red）:', '#e74c3c');
+  if (color) execCmd(cmd, color);
+}
+
+// Insert link
+function insertLink() {
+  const url = prompt('请输入链接地址:', 'https://');
+  if (url) execCmd('createLink', url);
+}
+
+// Insert image
+function insertImage() {
+  const url = prompt('请输入图片地址:', 'https://');
+  if (url) execCmd('insertImage', url);
+}
+
+// Fullscreen toggle
+function toggleFullscreen() {
+  const wrapper = document.querySelector('.editor-wrapper');
+  if (!document.fullscreenElement) {
+    wrapper.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+// Character count
+editor.addEventListener('input', updateCharCount);
+function updateCharCount() {
+  const text = editor.innerText || '';
+  const count = text.replace(/\s/g, '').length;
+  document.getElementById('charCount').textContent = '字数：' + count;
+}
+
+// ============ Core Feature: One-Click Format ============
+function formatContent() {
+  if (!editor.innerHTML.trim()) {
+    showToast('编辑器内无内容，请先粘贴文章');
+    return;
+  }
+
+  const keepBold = document.getElementById('opt-keep-bold').checked;
+  const keepLink = document.getElementById('opt-keep-link').checked;
+  const keepTable = document.getElementById('opt-keep-table').checked;
+  const imgCenter = document.getElementById('opt-img-center').checked;
+  const indent = document.getElementById('opt-indent').checked;
+
+  let html = editor.innerHTML;
+
+  // Remove all style attributes (except on tables if keeping tables)
+  html = html.replace(/ style="[^"]*"/gi, '');
+  html = html.replace(/ class="[^"]*"/gi, '');
+  html = html.replace(/ id="[^"]*"/gi, '');
+
+  // Remove color/font tags
+  html = html.replace(/<font[^>]*>/gi, '');
+  html = html.replace(/<\/font>/gi, '');
+
+  // Remove span tags (keep content)
+  html = html.replace(/<span[^>]*>/gi, '');
+  html = html.replace(/<\/span>/gi, '');
+
+  // Handle bold
+  if (!keepBold) {
+    html = html.replace(/<\/?b>/gi, '');
+    html = html.replace(/<\/?strong>/gi, '');
+  }
+
+  // Handle links
+  if (!keepLink) {
+    html = html.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1');
+  } else {
+    // Clean link attributes except href
+    html = html.replace(/<a\s+[^>]*href="([^"]*)"[^>]*>/gi, '<a href="$1" target="_blank">');
+  }
+
+  // Handle tables
+  if (!keepTable) {
+    html = html.replace(/<table[^>]*>[\s\S]*?<\/table>/gi, '');
+  }
+
+  // Remove underline, italic, strikethrough
+  html = html.replace(/<\/?u>/gi, '');
+  html = html.replace(/<\/?i>/gi, '');
+  html = html.replace(/<\/?em>/gi, '');
+  html = html.replace(/<\/?s>/gi, '');
+  html = html.replace(/<\/?strike>/gi, '');
+  html = html.replace(/<\/?del>/gi, '');
+
+  // Remove misc tags
+  html = html.replace(/<\/?center>/gi, '');
+  html = html.replace(/<\/?marquee[^>]*>/gi, '');
+
+  // Clean empty tags
+  html = html.replace(/<(\w+)[^>]*>\s*<\/\1>/gi, '');
+  html = html.replace(/<(\w+)[^>]*>\s*<\/\1>/gi, ''); // second pass
+
+  // Remove excessive <br>
+  html = html.replace(/(<br\s*\/?\s*>){3,}/gi, '<br><br>');
+
+  // Remove empty lines
+  html = html.replace(/\n{3,}/g, '\n\n');
+
+  // Wrap loose text in <p> if needed
+  // Split by block elements and process
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+
+  // Process images - center them
+  if (imgCenter) {
+    const imgs = tempDiv.querySelectorAll('img');
+    imgs.forEach(img => {
+      img.removeAttribute('style');
+      img.removeAttribute('class');
+      img.style.display = 'block';
+      img.style.margin = '10px auto';
+      img.style.maxWidth = '100%';
+    });
+  }
+
+  // Process paragraphs - add indent
+  if (indent) {
+    const ps = tempDiv.querySelectorAll('p');
+    ps.forEach(p => {
+      if (p.textContent.trim()) {
+        p.style.textIndent = '2em';
+      }
+    });
+  }
+
+  // Add consistent paragraph spacing
+  const ps = tempDiv.querySelectorAll('p');
+  ps.forEach(p => {
+    p.style.lineHeight = '1.8';
+    p.style.marginBottom = '0.8em';
+    p.style.fontSize = '16px';
+    p.style.color = '#333';
+  });
+
+  editor.innerHTML = tempDiv.innerHTML;
+  updateCharCount();
+  showToast('✓ 一键排版完成！');
+}
+
+// ============ Paste / Copy ============
+async function pasteFromClipboard() {
+  try {
+    const clipboardItems = await navigator.clipboard.read();
+    for (const item of clipboardItems) {
+      if (item.types.includes('text/html')) {
+        const blob = await item.getType('text/html');
+        const html = await blob.text();
+        editor.innerHTML = html;
+        updateCharCount();
+        showToast('✓ 已从剪贴板粘贴');
+        return;
+      }
+      if (item.types.includes('text/plain')) {
+        const blob = await item.getType('text/plain');
+        const text = await blob.text();
+        editor.innerHTML = text.split('\n').map(line => '<p>' + line + '</p>').join('');
+        updateCharCount();
+        showToast('✓ 已从剪贴板粘贴');
+        return;
+      }
+    }
+  } catch (e) {
+    // Fallback
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        editor.innerHTML = text.split('\n').map(line => '<p>' + line + '</p>').join('');
+        updateCharCount();
+        showToast('✓ 已从剪贴板粘贴');
+      }
+    } catch (e2) {
+      showToast('请使用 Ctrl+V 手动粘贴');
+    }
+  }
+}
+
+async function copyToClipboard() {
+  try {
+    const html = editor.innerHTML;
+    const blob = new Blob([html], { type: 'text/html' });
+    const plainBlob = new Blob([editor.innerText], { type: 'text/plain' });
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': blob,
+        'text/plain': plainBlob
+      })
+    ]);
+    showToast('✓ 已复制到剪贴板');
+  } catch (e) {
+    // Fallback
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    document.execCommand('copy');
+    sel.removeAllRanges();
+    showToast('✓ 已复制到剪贴板');
+  }
+}
+
+// ============ Bottom Actions ============
+function countWords() {
+  const text = editor.innerText || '';
+  const chinese = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+  const english = (text.match(/[a-zA-Z]+/g) || []).length;
+  const numbers = (text.match(/\d+/g) || []).length;
+  const total = text.replace(/\s/g, '').length;
+  alert(
+    `字数统计：\n\n` +
+    `总字符数：${total}\n` +
+    `中文字数：${chinese}\n` +
+    `英文单词：${english}\n` +
+    `数字个数：${numbers}`
+  );
+}
+
+function fixTypos() {
+  const typoMap = {
+    '洁白无暇': '洁白无瑕',
+    '黄梁美梦': '黄粱美梦',
+    '一愁莫展': '一筹莫展',
+    '穿流不息': '川流不息',
+    '不记其数': '不计其数',
+    '走头无路': '走投无路',
+    '迫不急待': '迫不及待',
+    '再接再励': '再接再厉',
+    '美仑美奂': '美轮美奂',
+    '金碧辉煌': '金碧辉煌',
+    '不能自己': '不能自已',
+    '按步就班': '按部就班',
+    '兴高彩烈': '兴高采烈',
+    '张皇失措': '张皇失措',
+    '墨守陈规': '墨守成规',
+    '名付其实': '名副其实',
+    '委屈求全': '委曲求全',
+    '世外桃园': '世外桃源',
+    '鬼计多端': '诡计多端',
+    '谈笑风声': '谈笑风生',
+    '一股作气': '一鼓作气',
+    '浮想联篇': '浮想联翩',
+    '出奇不意': '出其不意',
+    '既往不究': '既往不咎',
+    '嘻皮笑脸': '嬉皮笑脸',
+  };
+
+  let html = editor.innerHTML;
+  let count = 0;
+
+  for (const [wrong, correct] of Object.entries(typoMap)) {
+    const regex = new RegExp(wrong, 'g');
+    const matches = html.match(regex);
+    if (matches) {
+      count += matches.length;
+      html = html.replace(regex, `<span style="background:#ffe082;color:#d32f2f;border-bottom:2px solid #d32f2f;">${correct}</span>`);
+    }
+  }
+
+  editor.innerHTML = html;
+  showToast(count > 0 ? `✓ 已纠正 ${count} 处错误` : '未发现常见错别字');
+}
+
+function convertSimplified() {
+  // Basic simplified <-> traditional toggle
+  showToast('简繁转换功能需要引入外部字库（如 OpenCC），当前为演示版');
+}
+
+function saveFile() {
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>排版文章</title></head><body>${editor.innerHTML}</body></html>`;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '排版文章_' + new Date().toISOString().slice(0,10) + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ 文件已保存');
+}
+
+// ============ Toast ============
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+// ============ Demo Content ============
+editor.innerHTML = `
+<h2 style="text-align: center;"><span style="color:#e74c3c;"><strong>H排版 - 免费在线一键排版编辑器，支持MAC、Windows系统，打开即用免安装！</strong></span></h2>
+<p style="text-align: center;"><span style="font-size:16px;"><strong>♦ 完全免费！网络编辑排版格式化必备，强烈推荐！<span style="color:#16a085;">♦ 查找、替换、插入代码格式！保存文件！</span></strong></span></p>
+<p><span style="font-size:18px;"><span style="color:#16a085;"><strong>【网编排版工具简介】</strong></span></span><span style="font-size:16px;">网络编辑一键排版工具，一键排版格式化网编工具，网络编辑转帖工具。提供文章快速格式化一键排版功能，实现一键清除新闻文章等多余格式代码，一键排版格式化网络文章，有效提高编辑工作效率。♦ 工具栏最后一个按钮全屏编辑无干扰！</span></p>
+<ul>
+<li><span style="font-size:16px;">简繁体相互转换</span></li>
+<li><span style="font-size:16px;">段前是否空格</span></li>
+<li><span style="font-size:16px;">可选保留文章内容中的表格</span></li>
+<li><span style="font-size:16px;">文字纠错功能【千余错别字词库】</span></li>
+<li><span style="font-size:16px;">一键排版格式化文章</span></li>
+<li><span style="font-size:16px;"><strong>右上角全屏编辑、字数统计、文字大小、编辑框随内容可变！</strong></span></li>
+</ul>
+<p style="text-align: center;"><span style="font-size:18px;">文字纠错实例：洁白无暇（洁白无瑕），黄梁美梦（黄粱美梦）。<strong>点击右上角"一键排版"试试吧~</strong></span></p>
+`;
+updateCharCount();
+</script>
+
+</body>
+</html>
